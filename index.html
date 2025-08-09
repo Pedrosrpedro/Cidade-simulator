@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meu City Builder</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <h1>Meu Construtor de Cidades</h1>
+    <p>Inspirado em Cities: Skylines</p>
+
+    <div id="container-principal">
+        <canvas id="canvas-jogo" width="800" height="600"></canvas>
+        <div id="ui-lateral">
+            <h3>Ferramentas</h3>
+            <div id="barra-ferramentas">
+                <button id="ferramenta-estrada" class="ferramenta selecionada">Estrada (Custo: $10)</button>
+                <button id="ferramenta-residencial" class="ferramenta">Zona Residencial (Custo: $50)</button>
+                <button id="ferramenta-comercial" class="ferramenta">Zona Comercial (Custo: $50)</button>
+                <button id="ferramenta-industrial" class="ferramenta">Zona Industrial (Custo: $50)</button>
+                <button id="ferramenta-energia" class="ferramenta">Usina Elétrica (Custo: $500)</button>
+                <button id="ferramenta-demolir" class="ferramenta">Demolir (Custo: $5)</button>
+            </div>
+            <hr>
+            <h3>Recursos da Cidade</h3>
+            <div id="stats">
+                <p>Dinheiro: <span id="dinheiro-valor">20000</span></p>
+                <p>População: <span id="populacao-valor">0</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
