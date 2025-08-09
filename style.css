@@ -1,0 +1,49 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f8ff;
+    color: #333;
+    text-align: center;
+}
+
+#container-principal {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+#canvas-jogo {
+    border: 2px solid #000;
+    cursor: pointer;
+}
+
+#ui-lateral {
+    width: 250px;
+    padding: 15px;
+    border: 2px solid #ccc;
+    background-color: #fff;
+    text-align: left;
+}
+
+#barra-ferramentas .ferramenta {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 8px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    text-align: left;
+}
+
+#barra-ferramentas .ferramenta.selecionada {
+    background-color: #aaddff;
+    border-color: #0077cc;
+    font-weight: bold;
+}
+
+#stats p {
+    margin: 10px 0;
+    font-size: 1.1em;
+}
