@@ -1,5 +1,7 @@
 // js/main.js
 import { initGame } from './game.js';
+import { initIslandEditor } from './islandEditor.js'; // IMPORTA O EDITOR
+
 
 window.onload = () => {
     const mainMenu = document.getElementById('main-menu');
