@@ -19,10 +19,11 @@ export function initGame(config) {
 
     const camera = { x: 0, y: 0, zoom: 1 };
     
-    // --- MAPA DO JOGO (ALTERADO) ---
+    // --- MAPA DO JOGO (Com a lógica para criar o mapa costeiro) ---
     const map = [];
-    const LAND_START_Y = Math.floor(gameState.mapHeight * 0.4); // Onde a terra começa
-    const LAND_END_Y = Math.floor(gameState.mapHeight * 0.6);   // Onde a terra termina
+    // Define que a faixa de terra ocupará a parte central do mapa
+    const LAND_START_Y = Math.floor(gameState.mapHeight * 0.4); 
+    const LAND_END_Y = Math.floor(gameState.mapHeight * 0.6);   
 
     for (let y = 0; y < gameState.mapHeight; y++) {
         map[y] = [];
@@ -36,9 +37,8 @@ export function initGame(config) {
         }
     }
     
-    // --- CARREGAMENTO DE IMAGENS (ALTERADO) ---
+    // --- CARREGAMENTO DE IMAGENS (Incluindo a imagem da água) ---
     const images = {};
-    // Adicionamos 'agua' à lista de imagens para carregar
     const imageSources = ['grama', 'agua', 'estrada', 'residencial', 'comercial', 'industrial', 'energia'];
     let imagesLoaded = 0;
 
@@ -53,6 +53,8 @@ export function initGame(config) {
         };
         images[key].onerror = () => {
             console.error(`Falha ao carregar a imagem: imagens/${key}.png`);
+            // Mesmo com erro, contamos como "carregada" para o jogo não travar.
+            // A função de desenho saberá como lidar com a imagem faltando.
             imagesLoaded++;
             if (imagesLoaded === imageSources.length) {
                 startGame();
@@ -60,10 +62,11 @@ export function initGame(config) {
         };
     });
 
-    // O resto do arquivo (startGame, gameLoop, etc.) continua igual...
+    // --- INICIALIZAÇÃO E LOOP DO JOGO ---
     function startGame() {
         setupTools(gameState, canvas);
         
+        // Eventos do mouse
         let isDragging = false;
         let lastMousePos = { x: 0, y: 0 };
 
@@ -84,6 +87,7 @@ export function initGame(config) {
         });
         
         canvas.addEventListener('click', (e) => {
+            // Só constrói se não for a ferramenta de mover
             if(gameState.currentTool !== 'mover') {
                 handleMapClick(e, canvas, camera, gameState, map);
             }
@@ -94,10 +98,12 @@ export function initGame(config) {
             handleMapZoom(e, camera);
         });
         
+        // Inicia o ciclo de simulação
         setInterval(() => {
             runSimulation(gameState, map);
         }, SIMULATION_INTERVAL);
 
+        // Inicia o loop de renderização
         gameLoop();
     }
 
