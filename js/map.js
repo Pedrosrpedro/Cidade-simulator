@@ -10,12 +10,11 @@ export function screenToMap(screenPos, canvas, camera, gameState) {
     return { x: mapX, y: mapY };
 }
 
-// --- Lógica de Desenho ---
+// --- Lógica de Desenho (Totalmente Corrigida) ---
 export function drawMap(ctx, canvas, map, images, camera, gameState) {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Limpa o canvas transparente
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     
-    // Aplica o zoom e a câmera
     ctx.translate(canvas.width / 2, canvas.height / 4);
     ctx.scale(camera.zoom, camera.zoom);
     ctx.translate(-camera.x, -camera.y);
@@ -26,31 +25,28 @@ export function drawMap(ctx, canvas, map, images, camera, gameState) {
             const screenY = (x + y) * TILE_HEIGHT_HALF;
             const tile = map[y][x];
 
-            // 1. Desenha a água como base para todos os tiles
-            const waterImg = images['agua'];
-            if (waterImg && waterImg.complete) {
-                ctx.drawImage(waterImg, screenX, screenY, TILE_WIDTH, TILE_HEIGHT);
-            }
+            // Pega a imagem correspondente ao tipo do tile (ex: 'agua' ou 'grama_n')
+            const tileImg = images[tile.type];
 
-            // 2. Se o tile não for água, desenha a imagem correspondente por cima
-            if (tile.type !== 'agua') {
-                const tileImg = images[tile.type];
-                if (tileImg && tileImg.complete) {
-                    // Lógica para redimensionar mantendo a proporção
-                    const aspectRatio = tileImg.height / tileImg.width;
-                    const scaledHeight = TILE_WIDTH * aspectRatio;
-                    const imgX = screenX;
-                    const imgY = screenY + TILE_HEIGHT - scaledHeight; // Alinha a base da imagem
-                    
-                    ctx.drawImage(tileImg, imgX, imgY, TILE_WIDTH, scaledHeight);
-                }
-            }
+            // CORREÇÃO ANTI-CRASH E LÓGICA DE DESENHO
+            // Só tenta desenhar se a imagem existir no nosso objeto E se ela carregou sem erros.
+            if (tileImg && tileImg.complete) {
+                // Lógica de redimensionamento que já tínhamos
+                const aspectRatio = tileImg.height / tileImg.width;
+                const scaledHeight = TILE_WIDTH * aspectRatio;
+                const imgX = screenX;
+                const imgY = screenY + TILE_HEIGHT - scaledHeight;
+                
+                ctx.drawImage(tileImg, imgX, imgY, TILE_WIDTH, scaledHeight);
+            } 
+            // Se a imagem falhou ao carregar, não fazemos nada, evitando o crash.
+            // O espaço ficará em branco (transparente), mostrando o oceano do fundo.
         }
     }
     ctx.restore();
 }
 
-// --- Funções de Interação ---
+// --- Funções de Interação (sem alterações) ---
 export function handleMapClick(event, canvas, camera, gameState, map) {
     const screenPos = { x: event.offsetX, y: event.offsetY };
     const { x: mapX, y: mapY } = screenToMap(screenPos, canvas, camera, gameState);
@@ -58,21 +54,16 @@ export function handleMapClick(event, canvas, camera, gameState, map) {
     if (mapX >= 0 && mapX < gameState.mapWidth && mapY >= 0 && mapY < gameState.mapHeight) {
         const currentTile = map[mapY][mapX];
         const cost = COSTS[gameState.currentTool] || 0;
-
-        // Verifica se é um local construível (qualquer tipo de grama)
         const isBuildable = currentTile.type.startsWith('grama_');
 
         if (gameState.currentTool === 'demolir') {
-            // Não pode demolir água ou grama vazia
             if (currentTile.type !== 'agua' && !isBuildable) {
                 if (gameState.money >= COSTS.demolir) {
-                    map[mapY][mapX] = { type: 'grama_all' }; // Transforma em grama simples (será reprocessado no futuro)
+                    map[mapY][mapX] = { type: 'grama_all' };
                     gameState.money -= COSTS.demolir;
-                    // Idealmente, aqui chamaríamos uma função para reprocessar os vizinhos
                 }
             }
         } else if (isBuildable) {
-            // Lógica para construir
             if (gameState.money >= cost) {
                 currentTile.type = gameState.currentTool;
                 gameState.money -= cost;
@@ -94,7 +85,6 @@ export function handleMapZoom(event, camera) {
     const zoomIntensity = 0.1;
     const wheel = event.deltaY < 0 ? 1 : -1;
     const zoom = Math.exp(wheel * zoomIntensity);
-
     camera.zoom *= zoom;
     camera.zoom = Math.max(0.25, Math.min(camera.zoom, 4));
 }
