@@ -2,43 +2,49 @@
 import { initGame } from './game.js';
 import { initIslandEditor } from './islandEditor.js';
 
-// SUBSTITUÍMOS 'window.onload' POR ESTE MÉTODO MAIS MODERNO E SEGURO.
-// Este evento espera apenas o HTML ser carregado, o que é mais rápido e confiável
-// para encontrar elementos com getElementById.
+// Espera o HTML da página ser completamente carregado antes de executar o código.
+// Isso previne os erros de 'null' que você viu anteriormente.
 document.addEventListener('DOMContentLoaded', () => {
 
-    // Agora, temos certeza de que todos os elementos abaixo existem na página.
+    // Busca os elementos principais da interface.
     const mainMenu = document.getElementById('main-menu');
     const gameContainer = document.getElementById('container-principal');
     const btnNewGame = document.getElementById('btn-new-game');
     const btnExit = document.getElementById('btn-exit');
 
-    // Se qualquer um desses elementos ainda for nulo, significa que há um erro de digitação
-    // no ID dentro do arquivo index.html.
+    // Uma verificação de segurança para garantir que todos os IDs no HTML estão corretos.
     if (!mainMenu || !gameContainer || !btnNewGame || !btnExit) {
         console.error("ERRO: Um ou mais elementos do menu principal não foram encontrados. Verifique os IDs no seu arquivo index.html!");
         return;
     }
 
+    // Define o que acontece ao clicar no botão "Novo Jogo".
     btnNewGame.addEventListener('click', async () => {
-        // Valores para o tamanho do mapa no editor.
+        // 1. Esconde o menu principal imediatamente para evitar sobreposição.
+        mainMenu.classList.add('hidden');
+
+        // Configurações para o tamanho do mapa no editor.
         const mapWidth = 50;
         const mapHeight = 50;
 
-        // Chama o editor de ilha e espera o resultado.
+        // 2. Chama a função que abre o editor de ilha e espera o jogador terminar.
         const mapData = await initIslandEditor(mapWidth, mapHeight);
 
-        if (mapData) { // Se o usuário concluiu (não cancelou)
-            mainMenu.classList.add('hidden');
+        // 3. Avalia o que o jogador fez.
+        if (mapData) { 
+            // Se 'mapData' existe, o jogador clicou em "Concluir".
+            // Mostra o container do jogo e inicia o jogo com os dados da ilha.
             gameContainer.classList.remove('hidden');
-            
-            // Passa os dados do mapa desenhado para iniciar o jogo.
             initGame({ mapWidth, mapHeight, mapData });
+        } else { 
+            // Se 'mapData' é 'null', o jogador clicou em "Cancelar".
+            // Mostra o menu principal novamente.
+            mainMenu.classList.remove('hidden');
         }
     });
 
+    // Define o que acontece ao clicar no botão "Sair".
     btnExit.addEventListener('click', () => {
-        // Apenas um alerta, já que não podemos fechar a aba do navegador com segurança.
         alert("Obrigado por jogar!");
     });
 });
