@@ -47,3 +47,13 @@ body {
     margin: 10px 0;
     font-size: 1.1em;
 }
+
+
+#canvas-jogo {
+    border: 2px solid #000;
+    cursor: grab; /* Novo cursor para indicar que pode arrastar */
+}
+
+#canvas-jogo:active {
+    cursor: grabbing; /* Cursor quando está arrastando */
+}
