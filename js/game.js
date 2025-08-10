@@ -19,18 +19,27 @@ export function initGame(config) {
 
     const camera = { x: 0, y: 0, zoom: 1 };
     
-    // --- MAPA DO JOGO ---
+    // --- MAPA DO JOGO (ALTERADO) ---
     const map = [];
+    const LAND_START_Y = Math.floor(gameState.mapHeight * 0.4); // Onde a terra começa
+    const LAND_END_Y = Math.floor(gameState.mapHeight * 0.6);   // Onde a terra termina
+
     for (let y = 0; y < gameState.mapHeight; y++) {
         map[y] = [];
         for (let x = 0; x < gameState.mapWidth; x++) {
-            map[y][x] = { type: 'grama' };
+            // Se o bloco 'y' está dentro da faixa de terra, é grama. Senão, é água.
+            if (y >= LAND_START_Y && y <= LAND_END_Y) {
+                map[y][x] = { type: 'grama' };
+            } else {
+                map[y][x] = { type: 'agua' };
+            }
         }
     }
     
-    // --- CARREGAMENTO DE IMAGENS ---
+    // --- CARREGAMENTO DE IMAGENS (ALTERADO) ---
     const images = {};
-    const imageSources = ['grama', 'estrada', 'residencial', 'comercial', 'industrial', 'energia'];
+    // Adicionamos 'agua' à lista de imagens para carregar
+    const imageSources = ['grama', 'agua', 'estrada', 'residencial', 'comercial', 'industrial', 'energia'];
     let imagesLoaded = 0;
 
     imageSources.forEach(key => {
@@ -44,8 +53,6 @@ export function initGame(config) {
         };
         images[key].onerror = () => {
             console.error(`Falha ao carregar a imagem: imagens/${key}.png`);
-            // Mesmo com erro, contamos como "carregada" para o jogo não travar.
-            // A função de desenho saberá como lidar com a imagem faltando.
             imagesLoaded++;
             if (imagesLoaded === imageSources.length) {
                 startGame();
@@ -53,11 +60,10 @@ export function initGame(config) {
         };
     });
 
-    // --- INICIALIZAÇÃO E LOOP DO JOGO ---
+    // O resto do arquivo (startGame, gameLoop, etc.) continua igual...
     function startGame() {
         setupTools(gameState, canvas);
         
-        // Eventos do mouse
         let isDragging = false;
         let lastMousePos = { x: 0, y: 0 };
 
@@ -78,7 +84,6 @@ export function initGame(config) {
         });
         
         canvas.addEventListener('click', (e) => {
-            // Só constrói se não for a ferramenta de mover
             if(gameState.currentTool !== 'mover') {
                 handleMapClick(e, canvas, camera, gameState, map);
             }
