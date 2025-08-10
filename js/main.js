@@ -1,94 +1,40 @@
 // js/main.js
-import { MAP_SIZE, SIMULATION_INTERVAL } from './config.js';
-import { setupTools, updateStats } from './ui.js';
-import { runSimulation } from './simulation.js';
-import { drawMap, handleMapClick } from './map.js';
+import { initGame } from './game.js';
 
-window.onload = function() {
-    const canvas = document.getElementById('canvas-jogo');
-    const ctx = canvas.getContext('2d');
+window.onload = () => {
+    const mainMenu = document.getElementById('main-menu');
+    const newGameModal = document.getElementById('new-game-modal');
+    const gameContainer = document.getElementById('container-principal');
 
-    // --- ESTADO GLOBAL DO JOGO ---
-    const gameState = {
-        money: 20000,
-        population: 0,
-        income: 0,
-        currentTool: 'estrada',
-    };
-
-    // --- CÂMERA E CONTROLES DE MOVIMENTO ---
-    const camera = { x: 0, y: 0 };
-    let isDragging = false;
-    let lastMouseX, lastMouseY;
+    const btnNewGame = document.getElementById('btn-new-game');
+    const btnCancelNewGame = document.getElementById('btn-cancel-new-game');
+    const btnStartNewGame = document.getElementById('btn-start-new-game');
     
-    canvas.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        lastMouseX = e.offsetX;
-        lastMouseY = e.offsetY;
-        canvas.style.cursor = 'grabbing';
+    // Mostra o modal de novo jogo
+    btnNewGame.addEventListener('click', () => {
+        newGameModal.classList.remove('hidden');
+    });
+
+    // Esconde o modal
+    btnCancelNewGame.addEventListener('click', () => {
+        newGameModal.classList.add('hidden');
     });
     
-    canvas.addEventListener('mouseup', () => {
-        isDragging = false;
-        canvas.style.cursor = 'grab';
-    });
-
-    canvas.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        const dx = e.offsetX - lastMouseX;
-        const dy = e.offsetY - lastMouseY;
-        camera.x -= dx;
-        camera.y -= dy;
-        lastMouseX = e.offsetX;
-        lastMouseY = e.offsetY;
-    });
-
-    // --- MAPA DO JOGO ---
-    const map = [];
-    for (let y = 0; y < MAP_SIZE; y++) {
-        map[y] = [];
-        for (let x = 0; x < MAP_SIZE; x++) {
-            map[y][x] = { type: 'grama' };
-        }
-    }
-    
-    // --- CARREGAMENTO DE IMAGENS ---
-    const images = {};
-    const imageSources = ['grama', 'estrada', 'residencial', 'comercial', 'industrial', 'energia'];
-    let imagesLoaded = 0;
-
-    imageSources.forEach(key => {
-        images[key] = new Image();
-        images[key].src = `imagens/${key}.png`;
-        images[key].onload = () => {
-            imagesLoaded++;
-            if (imagesLoaded === imageSources.length) {
-                startGame();
-            }
-        };
-    });
-
-    // --- INICIALIZAÇÃO E LOOP DO JOGO ---
-    function startGame() {
-        setupTools(gameState);
-        canvas.addEventListener('click', (e) => {
-            if(!isDragging) { // Só constrói se não estiver arrastando
-                 handleMapClick(e, canvas, camera, gameState, map);
-            }
-        });
+    // Inicia o jogo com as configurações do modal
+    btnStartNewGame.addEventListener('click', () => {
+        const mapWidth = parseInt(document.getElementById('map-width').value);
+        const mapHeight = parseInt(document.getElementById('map-height').value);
         
-        // Inicia o ciclo de simulação
-        setInterval(() => {
-            runSimulation(gameState, map);
-        }, SIMULATION_INTERVAL);
+        mainMenu.classList.add('hidden');
+        newGameModal.classList.add('hidden');
+        gameContainer.classList.remove('hidden');
+        
+        // Inicia o jogo passando as configurações
+        initGame({ mapWidth, mapHeight });
+    });
 
-        // Inicia o loop de renderização
-        gameLoop();
-    }
-
-    function gameLoop() {
-        drawMap(ctx, canvas, map, images, camera);
-        updateStats(gameState);
-        requestAnimationFrame(gameLoop);
-    }
+    document.getElementById('btn-exit').addEventListener('click', () => {
+        // Em um app de verdade, fecharia a janela. Aqui, apenas damos um alerta.
+        alert("Imagine que o jogo fechou! :)");
+    });
 };
