@@ -199,8 +199,17 @@ body, html {
 /* ... (Estilos do Menu Principal) ... */
 
 /* Estilos para o NOVO modal do editor */
-#island-editor-modal .modal-content {
-    background: #333; /* Fundo mais claro para o editor */
+#island-editor-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 110; /* Camada da frente (MAIOR que o menu) */
 }
 #island-editor-canvas {
     background-color: #0d47a1; /* Fundo azul para o editor 2D */
