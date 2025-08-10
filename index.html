@@ -7,12 +7,39 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Meu Construtor de Cidades Isométrico</h1>
-    <div id="container-principal">
-        <canvas id="canvas-jogo" width="800" height="600"></canvas>
+
+    <!-- NOVO: Menu Principal -->
+    <div id="main-menu">
+        <div class="menu-container">
+            <h1>City Builder</h1>
+            <button id="btn-continue-game" disabled>Continuar Jogo</button>
+            <button id="btn-new-game">Novo Jogo</button>
+            <button id="btn-load-game" disabled>Carregar Jogo</button>
+            <button id="btn-options" disabled>Opções</button>
+            <button id="btn-exit">Sair</button>
+        </div>
+    </div>
+
+    <!-- NOVO: Modal de Novo Jogo -->
+    <div id="new-game-modal" class="hidden">
+        <div class="modal-content">
+            <h2>Criar Nova Cidade</h2>
+            <label for="map-width">Largura do Mapa (blocos):</label>
+            <input type="number" id="map-width" value="30" min="20" max="100">
+            <label for="map-height">Altura do Mapa (blocos):</label>
+            <input type="number" id="map-height" value="30" min="20" max="100">
+            <button id="btn-start-new-game">Iniciar</button>
+            <button id="btn-cancel-new-game">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Container do Jogo (inicialmente escondido) -->
+    <div id="container-principal" class="hidden">
+        <canvas id="canvas-jogo" width="1000" height="700"></canvas>
         <div id="ui-lateral">
             <h3>Ferramentas</h3>
             <div id="barra-ferramentas">
+                <button data-tool="mover" class="ferramenta">Mover Câmera</button> <!-- NOVO -->
                 <button data-tool="estrada" class="ferramenta selecionada">Estrada (Custo: $10)</button>
                 <button data-tool="residencial" class="ferramenta">Zona Residencial (Custo: $50)</button>
                 <button data-tool="comercial" class="ferramenta">Zona Comercial (Custo: $50)</button>
@@ -30,7 +57,6 @@
         </div>
     </div>
 
-    <!-- Carrega o script principal como um módulo -->
     <script type="module" src="js/main.js"></script>
 </body>
 </html>
