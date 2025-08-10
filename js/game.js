@@ -12,34 +12,74 @@ export function initGame(config) {
         money: 20000,
         population: 0,
         income: 0,
-        currentTool: 'estrada',
+        currentTool: 'mover', // Começa com a ferramenta de mover por padrão
         mapWidth: config.mapWidth,
         mapHeight: config.mapHeight,
     };
 
     const camera = { x: 0, y: 0, zoom: 1 };
     
-    // --- MAPA DO JOGO (Com a lógica para criar o mapa costeiro) ---
+    // --- 1. CRIA O MAPA INICIAL A PARTIR DOS DADOS DO EDITOR ---
     const map = [];
-    // Define que a faixa de terra ocupará a parte central do mapa
-    const LAND_START_Y = Math.floor(gameState.mapHeight * 0.4); 
-    const LAND_END_Y = Math.floor(gameState.mapHeight * 0.6);   
-
     for (let y = 0; y < gameState.mapHeight; y++) {
         map[y] = [];
         for (let x = 0; x < gameState.mapWidth; x++) {
-            // Se o bloco 'y' está dentro da faixa de terra, é grama. Senão, é água.
-            if (y >= LAND_START_Y && y <= LAND_END_Y) {
-                map[y][x] = { type: 'grama' };
-            } else {
-                map[y][x] = { type: 'agua' };
+            // Usa o 'mapData' do editor para definir se é grama ou água
+            const isLand = config.mapData[y][x] === 1;
+            map[y][x] = { type: isLand ? 'grama' : 'agua' };
+        }
+    }
+
+    // --- 2. PROCESSA O MAPA PARA ADICIONAR AS BORDAS CORRETAS (AUTOTILING) ---
+    processTileTypes();
+    
+    function processTileTypes() {
+        const typeMap = {
+            15: 'all',      // Vizinhos em: N,S,W,E
+            14: 'e_nsw',    // Vizinhos em: N,S,W
+            13: 'w_nse',    // Vizinhos em: N,S,E
+            12: 'ew',       // Vizinhos em: N,S
+            11: 's_new',    // Vizinhos em: N,W,E
+            10: 'sw',       // Vizinhos em: N,E
+            9: 'se',        // Vizinhos em: N,W
+            8: 'ns',        // Vizinhos em: N
+            7: 'n_sew',     // Vizinhos em: S,W,E
+            6: 'ne',        // Vizinhos em: S,E
+            5: 'nw',        // Vizinhos em: S,W
+            4: 's',         // Vizinhos em: S
+            3: 'e',         // Vizinhos em: W,E
+            2: 'w',         // Vizinhos em: W
+            1: 'n',         // Vizinhos em: E
+            0: 'none'       // Nenhum vizinho
+        };
+
+        const newMap = JSON.parse(JSON.stringify(map)); // Cria uma cópia para ler
+
+        for (let y = 0; y < gameState.mapHeight; y++) {
+            for (let x = 0; x < gameState.mapWidth; x++) {
+                if (newMap[y][x].type === 'grama') {
+                    let bitmask = 0;
+                    // Checa vizinhos no mapa original e cria um valor de 4 bits (bitmask)
+                    if (y > 0 && newMap[y-1][x].type === 'grama') bitmask += 8; // Norte
+                    if (y < gameState.mapHeight-1 && newMap[y+1][x].type === 'grama') bitmask += 4; // Sul
+                    if (x > 0 && newMap[y][x-1].type === 'grama') bitmask += 2; // Oeste
+                    if (x < gameState.mapWidth-1 && newMap[y][x+1].type === 'grama') bitmask += 1; // Leste
+                    
+                    const borderType = typeMap[bitmask];
+                    map[y][x].type = `grama_${borderType}`; // Define o tipo final no mapa real
+                }
             }
         }
     }
     
-    // --- CARREGAMENTO DE IMAGENS (Incluindo a imagem da água) ---
+    // --- 3. CARREGA TODAS AS IMAGENS NECESSÁRIAS ---
     const images = {};
-    const imageSources = ['grama', 'agua', 'estrada', 'residencial', 'comercial', 'industrial', 'energia'];
+    const imageSources = [
+        'agua', 'estrada', 'residencial', 'comercial', 'industrial', 'energia',
+        'grama_all', 'grama_n', 'grama_s', 'grama_e', 'grama_w', 'grama_ns', 'grama_ew',
+        'grama_ne', 'grama_nw', 'grama_se', 'grama_sw', 'grama_n_sew', 'grama_s_new',
+        'grama_e_nsw', 'grama_w_nse', 'grama_none'
+    ];
     let imagesLoaded = 0;
 
     imageSources.forEach(key => {
@@ -53,8 +93,6 @@ export function initGame(config) {
         };
         images[key].onerror = () => {
             console.error(`Falha ao carregar a imagem: imagens/${key}.png`);
-            // Mesmo com erro, contamos como "carregada" para o jogo não travar.
-            // A função de desenho saberá como lidar com a imagem faltando.
             imagesLoaded++;
             if (imagesLoaded === imageSources.length) {
                 startGame();
@@ -62,11 +100,10 @@ export function initGame(config) {
         };
     });
 
-    // --- INICIALIZAÇÃO E LOOP DO JOGO ---
+    // --- 4. INICIALIZA O LOOP E OS EVENTOS DO JOGO ---
     function startGame() {
         setupTools(gameState, canvas);
         
-        // Eventos do mouse
         let isDragging = false;
         let lastMousePos = { x: 0, y: 0 };
 
@@ -87,7 +124,6 @@ export function initGame(config) {
         });
         
         canvas.addEventListener('click', (e) => {
-            // Só constrói se não for a ferramenta de mover
             if(gameState.currentTool !== 'mover') {
                 handleMapClick(e, canvas, camera, gameState, map);
             }
@@ -98,12 +134,10 @@ export function initGame(config) {
             handleMapZoom(e, camera);
         });
         
-        // Inicia o ciclo de simulação
         setInterval(() => {
             runSimulation(gameState, map);
         }, SIMULATION_INTERVAL);
 
-        // Inicia o loop de renderização
         gameLoop();
     }
 
